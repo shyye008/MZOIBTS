@@ -215,86 +215,85 @@ est.ILL<-function(X1,X2,X3,X4,y){
 }
 
 #####Fit copula parameter#####
-qll.cop<-function(alpha,theta,X1,X2,X3,X4,y,copula){
-  cop.like<-function(u2,u1,p21,p22,p11,p12,alpha,copula){
-    if(copula=="Gaussian"){
-      cc<-normalCopula(alpha)
-    } else if(copula=="Clayton"){
-      cc<-claytonCopula(alpha)
-    } else if(copula=="Gumbel"){
-      cc<-gumbelCopula(alpha)
-    } else if(copula=="Frank"){
-      cc<-frankCopula(alpha)
-    } else if(copula=="AMH"){
-      cc<-amhCopula(alpha)
+qest.cop<-function(theta,X1,X2,X3,X4,y,copula){
+  qll.cop<-function(alpha,theta,X1,X2,X3,X4,y,copula){
+    cop.like<-function(u2,u1,p21,p22,p11,p12,alpha,copula){
+      if(copula=="Gaussian"){
+        cc<-normalCopula(alpha)
+      } else if(copula=="Clayton"){
+        cc<-claytonCopula(alpha)
+      } else if(copula=="Gumbel"){
+        cc<-gumbelCopula(alpha)
+      } else if(copula=="Frank"){
+        cc<-frankCopula(alpha)
+      } else if(copula=="AMH"){
+        cc<-amhCopula(alpha)
+      }
+      
+      if(u1==0){
+        if(u2==0){
+          cd<-pCopula(c(1-p11,1-p21),cc)
+        } else if(u2==1){
+          cd<-(1-p11-pCopula(c(1-p21*p22,1-p11),cc))
+        } else{
+          cd<-(cCopula(c(u2,1-p11),cc)[,2])
+        }
+      } else if(u1==1){
+        if(u2==0){
+          cd<-(1-p21-pCopula(c(1-p11*p12,1-p21),cc))
+        } else if(u2==1){
+          cd<-(p11*p12+p21*p22-1+pCopula(c(1-p21*p22,1-p11*p12),cc))
+        } else{
+          cd<-(1-cCopula(c(u2,1-p11*p12),cc)[,2])
+        }
+      } else{
+        if(u2==0){
+          cd<-cCopula(c(u1,1-p21),cc)[,2]
+        } else if(u2==1){
+          cd<-1-cCopula(c(u1,1-p21*p22),cc)[,2]
+        } else{
+          cd<-dCopula(c(u1,u2),cc)
+        }
+      }
+      cd
     }
     
-    if(u1==0){
-      if(u2==0){
-        cd<-pCopula(c(1-p11,1-p21),cc)
-      } else if(u2==1){
-        cd<-(1-p11-pCopula(c(1-p21*p22,1-p11),cc))
-      } else{
-        cd<-(cCopula(c(u2,1-p11),cc)[,2])
-      }
-    } else if(u1==1){
-      if(u2==0){
-        cd<-(1-p21-pCopula(c(1-p11*p12,1-p21),cc))
-      } else if(u2==1){
-        cd<-(p11*p12+p21*p22-1+pCopula(c(1-p21*p22,1-p11*p12),cc))
-      } else{
-        cd<-(1-cCopula(c(u2,1-p11*p12),cc)[,2])
-      }
-    } else{
-      if(u2==0){
-        cd<-cCopula(c(u1,1-p21),cc)[,2]
-      } else if(u2==1){
-        cd<-1-cCopula(c(u1,1-p21*p22),cc)[,2]
-      } else{
-        cd<-dCopula(c(u1,u2),cc)
-      }
+    n<-length(y)
+    dim1<-ncol(X1);dim2<-ncol(X2);dim3<-ncol(X3);dim4<-ncol(X4)
+    if(sum(y==0)<=1 & sum(y==1)<=1){
+      p1<-rep(1,n);p2<-rep(0,n)
+      v<-exp(as.vector(X3%*%theta[1:dim3]))/
+        (1+exp(as.vector(X3%*%theta[1:dim3])))
+      phi<-exp(as.vector(X4%*%theta[(dim3+1):(dim3+dim4)]))
+    }else if(sum(y==0)<=1 & sum(y==1)>1){
+      p1<-rep(1,n)
+      p2<-exp(as.vector(X2%*%theta[1:dim2]))/(1+exp(as.vector(X2%*%theta[1:dim2])))
+      v<-exp(as.vector(X3%*%theta[(dim2+1):(dim2+dim3)]))/
+        (1+exp(as.vector(X3%*%theta[(dim2+1):(dim2+dim3)])))
+      phi<-exp(as.vector(X4%*%theta[(dim2+dim3+1):(dim2+dim3+dim4)]))
+    }else if(sum(y==0)>1 & sum(y==1)<=1){
+      p1<-exp(as.vector(X1%*%theta[1:dim1]))/(1+exp(as.vector(X1%*%theta[1:dim1])))
+      p2<-rep(0,n)
+      v<-exp(as.vector(X3%*%theta[(dim1+1):(dim1+dim3)]))/
+        (1+exp(as.vector(X3%*%theta[(dim1+1):(dim1+dim3)])))
+      phi<-exp(as.vector(X4%*%theta[(dim1+dim3+1):(dim1+dim3+dim4)]))
+    }else{
+      p1<-exp(as.vector(X1%*%theta[1:dim1]))/(1+exp(as.vector(X1%*%theta[1:dim1])))
+      p2<-exp(as.vector(X2%*%theta[(dim1+1):(dim1+dim2)]))/(1+exp(as.vector(X2%*%theta[(dim1+1):(dim1+dim2)])))
+      v<-exp(as.vector(X3%*%theta[(dim1+dim2+1):(dim1+dim2+dim3)]))/
+        (1+exp(as.vector(X3%*%theta[(dim1+dim2+1):(dim1+dim2+dim3)])))
+      phi<-exp(as.vector(X4%*%theta[(dim1+dim2+dim3+1):(dim1+dim2+dim3+dim4)]))
     }
-    cd
+    mu<-(v/p1-p2)/(1-p2)
+    
+    u<-pZOIB(y,p1,p2,mu,phi)
+    ll<-0
+    for (i in 1:(n-1)) {
+      ll<-ll+log(cop.like(u[i+1],u[i],p1[i+1],p2[i+1],p1[i],p2[i],alpha,copula))
+    }
+    -ll
   }
   
-  n<-length(y)
-  dim1<-ncol(X1);dim2<-ncol(X2);dim3<-ncol(X3);dim4<-ncol(X4)
-  if(sum(y==0)<=1 & sum(y==1)<=1){
-    p1<-rep(1,n);p2<-rep(0,n)
-    v<-exp(as.vector(X3%*%theta[1:dim3]))/
-      (1+exp(as.vector(X3%*%theta[1:dim3])))
-    phi<-exp(as.vector(X4%*%theta[(dim3+1):(dim3+dim4)]))
-  }else if(sum(y==0)<=1 & sum(y==1)>1){
-    p1<-rep(1,n)
-    p2<-exp(as.vector(X2%*%theta[1:dim2]))/(1+exp(as.vector(X2%*%theta[1:dim2])))
-    v<-exp(as.vector(X3%*%theta[(dim2+1):(dim2+dim3)]))/
-      (1+exp(as.vector(X3%*%theta[(dim2+1):(dim2+dim3)])))
-    phi<-exp(as.vector(X4%*%theta[(dim2+dim3+1):(dim2+dim3+dim4)]))
-  }else if(sum(y==0)>1 & sum(y==1)<=1){
-    p1<-exp(as.vector(X1%*%theta[1:dim1]))/(1+exp(as.vector(X1%*%theta[1:dim1])))
-    p2<-rep(0,n)
-    v<-exp(as.vector(X3%*%theta[(dim1+1):(dim1+dim3)]))/
-      (1+exp(as.vector(X3%*%theta[(dim1+1):(dim1+dim3)])))
-    phi<-exp(as.vector(X4%*%theta[(dim1+dim3+1):(dim1+dim3+dim4)]))
-  }else{
-    p1<-exp(as.vector(X1%*%theta[1:dim1]))/(1+exp(as.vector(X1%*%theta[1:dim1])))
-    p2<-exp(as.vector(X2%*%theta[(dim1+1):(dim1+dim2)]))/(1+exp(as.vector(X2%*%theta[(dim1+1):(dim1+dim2)])))
-    v<-exp(as.vector(X3%*%theta[(dim1+dim2+1):(dim1+dim2+dim3)]))/
-      (1+exp(as.vector(X3%*%theta[(dim1+dim2+1):(dim1+dim2+dim3)])))
-    phi<-exp(as.vector(X4%*%theta[(dim1+dim2+dim3+1):(dim1+dim2+dim3+dim4)]))
-  }
-  mu<-(v/p1-p2)/(1-p2)
-  
-  u<-pZOIB(y,p1,p2,mu,phi)
-  ll<-0
-  for (i in 1:(n-1)) {
-    ll<-ll+log(cop.like(u[i+1],u[i],p1[i+1],p2[i+1],p1[i],p2[i],alpha,copula))
-  }
-  -ll
-}
-
-#####Fit MZOIBTS#####
-qest.cop<-function(theta,X1,X2,X3,X4,y,copula){
   if(copula=="Gaussian" | copula=="AMH"){
     a0<-0.4
   } else {
@@ -321,6 +320,7 @@ qest.cop<-function(theta,X1,X2,X3,X4,y,copula){
   list(fit$par,fit$value)
 }
 
+#####Fit MZOIBTS#####
 twostep.MZOIBTS<-function(R=100,X1,X2,X3,X4,y,copula,sig.level){
   dim1<-ncol(X1);dim2<-ncol(X2);dim3<-ncol(X3);dim4<-ncol(X4);n<-length(y)
   if(sum(y==0)<=1 & sum(y==1)<=1){
