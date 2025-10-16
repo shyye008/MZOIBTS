@@ -17,4 +17,4 @@ twostep.MZOIBTS: This function fits a Marginalized Zero-One-inflated Beta Time S
 selection: This selects the optimal change points for a Marginalized Zero-One-inflated Beta Interupted Time Series (MZOIBITS) model. It takes in X1, X2, y, and candidates as arguments.
 
 # mzoib_copula.stan: Stan codes for Bayesian implementation
-# Example.R: an example of using the R and Stan functions for data analysis
+# Example.R: an example of applying the R functions from MZOIBTS.R and mzoib_copula.stan for data analysis
