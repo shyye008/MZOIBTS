@@ -1,4 +1,4 @@
-# MZOIBTS
+# MZOIBTS.R: R functions for the proposed method
 
 Beta(mu,phi): This function includes four sub-functions: dbeta0, pbeta0, qbeta0, and rbeta0 that correspond to the density, cumulative distribution, quantile and random number generation functions for the beta distribution, respectively. These functions take in x, mu, and phi as arguments.
 
@@ -15,3 +15,6 @@ qest.cop: This function outputs the quasi-likelihood estimator of the copula par
 twostep.MZOIBTS: This function fits a Marginalized Zero-One-inflated Beta Time Series (MZOIBTS) model. It takes in R (default 100), X1, X2, X3, X4, y, and copula as arguments. Available copula families are Gaussian, Clayton, Gumbel, Frank, and AMH.
 
 selection: This selects the optimal change points for a Marginalized Zero-One-inflated Beta Interupted Time Series (MZOIBITS) model. It takes in X1, X2, y, and candidates as arguments.
+
+# mzoib_copula.stan: Stan codes for Bayesian implementation
+# Example.R: an example of using the R and Stan functions for data analysis
